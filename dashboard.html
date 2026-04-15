@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>User Dashboard</h2>
+<h3>Analyze News</h3>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div>{{ form.url.label }} {{ form.url(size=50) }}</div>
+    <div>{{ form.text.label }} {{ form.text(rows=6, cols=50) }}</div>
+    <div>{{ form.source.label }} {{ form.source() }}</div>
+    {{ form.submit() }}
+</form>
+
+{% if submission %}
+<div style="background: #ecf0f1; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <h4>Your Analysis Results:</h4>
+    <p><strong>Prediction:</strong> {{ submission.prediction }} ({{ submission.prob_real }} real)</p>
+    <p><strong>Sentiment:</strong> {{ submission.sentiment_label }} (Polarity: {{ submission.sentiment_polarity }}, Subjectivity: {{ submission.sentiment_subjectivity }})</p>
+    <p><strong>Source Score:</strong> {{ submission.source_score }}</p>
+    <p><strong>Verdict:</strong> {{ submission.overall_verdict }}</p>
+    <p><strong>Text Preview:</strong> {{ submission.text_preview }}</p>
+    
+    {% if submission.id %}
+    <form method="POST" action="{{ url_for('report', sub_id=submission.id) }}" style="display: inline; margin-top: 10px;">
+        <textarea name="reason" placeholder="Reason for report (optional)" rows="2" cols="30"></textarea>
+        <button type="submit">Report This (ID: {{ submission.id }})</button>
+    </form>
+    {% else %}
+    <p style="color: orange;">No ID available—refresh or resubmit.</p>
+    {% endif %}
+</div>
+
+{% if live_articles %}
+<div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0;">
+    <h4>Related Live News (Recent Media Coverage):</h4>
+    <p style="font-style: italic;">Based on your submission—classified for context on current events.</p>
+    <table>
+        <tr><th>Title</th><th>Source</th><th>Prediction</th><th>Prob Real</th><th>Verdict</th><th>Sentiment</th><th>Link</th></tr>
+        {% for article in live_articles %}
+        <tr>
+            <td>{{ article.title[:50] }}...</td>
+            <td>{{ article.source }}</td>
+            <td>{{ article.prediction }}</td>
+            <td>{{ article.prob_real }}</td>
+            <td>{{ article.overall_verdict }}</td>
+            <td>{{ article.sentiment_label }}</td>
+            <td><a href="{{ article.url }}" target="_blank">Read</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+{% endif %}
+
+<h3>Submission History</h3>
+<table>
+    <tr><th>ID</th><th>Text Preview</th><th>Prediction</th><th>Date</th><th>Status</th></tr>
+    {% for sub in history %}
+    <tr>
+        <td>{{ sub.id }}</td>
+        <td>{{ sub.text[:50] }}...</td>
+        <td>{{ sub.prediction }}</td>
+        <td>{{ sub.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>{{ sub.verified_status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

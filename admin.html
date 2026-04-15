@@ -1,0 +1,67 @@
+<!-- templates/admin.html (Admin dashboard) -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<h3>Analytics</h3>
+<p>Total Submissions: {{ total_subs }}</p>
+<p>Fake Detection Rate: {{ fake_rate }}%</p>
+<p>Active Users: {{ active_users }}</p>
+
+<h3>All Submissions</h3>
+<table>
+    <tr><th>ID</th><th>User</th><th>Text Preview</th><th>Prediction</th><th>Status</th><th>Actions</th></tr>
+    {% for sub in all_subs %}
+    <tr>
+        <td>{{ sub.id }}</td>
+        <td>{{ sub.author.email }}</td>
+        <td>{{ sub.text[:50] }}...</td>
+        <td>{{ sub.prediction }}</td>
+        <td>{{ sub.verified_status }}</td>
+        <td>
+            <form method="POST" action="{{ url_for('admin_review', sub_id=sub.id) }}" style="display: inline;">
+                <select name="status">
+                    <option value="unverified">Unverified</option>
+                    <option value="verified_real">Verified Real</option>
+                    <option value="verified_fake">Verified Fake</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Reported News</h3>
+<table>
+    <tr><th>ID</th><th>Submission ID</th><th>Reporter</th><th>Reason</th><th>Status</th></tr>
+    {% for report in reports %}
+    <tr>
+        <td>{{ report.id }}</td>
+        <td>{{ report.submission_id }}</td>
+        <td>{{ report.reporter.email }}</td>
+        <td>{{ report.reason[:50] }}...</td>
+        <td>{{ report.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>User Management</h3>
+<table>
+    <tr><th>ID</th><th>Email</th><th>Role</th><th>Actions</th></tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            {% if user.role != 'admin' %}
+            <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" onclick="return confirm('Delete user?')">Delete</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

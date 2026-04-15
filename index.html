@@ -1,0 +1,214 @@
+<!-- templates/index.html (Updated for user-friendly UX with URL input, toggle, and better layout) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detector</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            position: relative;
+            z-index: 1;
+        }
+        .input-mode {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-mode label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #34495e;
+        }
+        .input-mode input[type="radio"] {
+            margin-right: 5px;
+        }
+        .mode-section {
+            display: none;
+        }
+        .mode-section.active {
+            display: block;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #34495e;
+        }
+        input[type="url"], textarea, input[type="text"] {
+            border: 1px solid #bdc3c7;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="url"]:focus, textarea:focus, input[type="text"]:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        input[type="submit"] {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        input[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .result {
+            margin-top: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+        .result h2 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        .result p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        .result strong {
+            color: #2c3e50;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        /* Bubble effects */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.1);
+            animation: float 15s infinite;
+            z-index: 0;
+        }
+        .bubble:nth-child(1) { width: 150px; height: 150px; top: -50px; left: -50px; animation-duration: 20s; }
+        .bubble:nth-child(2) { width: 100px; height: 100px; bottom: -40px; right: -40px; animation-duration: 25s; }
+        .bubble:nth-child(3) { width: 200px; height: 200px; top: 50%; left: 10%; animation-duration: 18s; }
+        .bubble:nth-child(4) { width: 120px; height: 120px; top: 20%; right: 5%; animation-duration: 22s; animation-delay: 2s; }
+        .bubble:nth-child(5) { width: 80px; height: 80px; bottom: 10%; left: 15%; animation-duration: 28s; animation-delay: 4s; }
+        .bubble:nth-child(6) { width: 180px; height: 180px; top: -20px; right: -60px; animation-duration: 16s; animation-delay: 1s; }
+        .bubble:nth-child(7) { width: 140px; height: 140px; bottom: -30px; left: -30px; animation-duration: 24s; animation-delay: 3s; }
+        .bubble:nth-child(8) { width: 90px; height: 90px; top: 70%; right: 20%; animation-duration: 19s; animation-delay: 5s; }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fake News Detection Platform</h1>
+        <p style="text-align: center; color: #7f8c8d;">Paste a news URL or enter text manually to detect if it's real or fake!</p>
+        
+        <div class="input-mode">
+            <label><input type="radio" name="mode" value="url" checked> URL</label>
+            <label><input type="radio" name="mode" value="text"> Manual Text</label>
+        </div>
+        
+        <form method="POST" id="detectionForm">
+            <div id="url-section" class="mode-section active">
+                <label for="url">Enter News URL:</label>
+                <input type="url" id="url" name="url" placeholder="https://example.com/article" required>
+            </div>
+            <div id="text-section" class="mode-section">
+                <label for="text">Enter News Content:</label>
+                <textarea id="text" name="text" placeholder="Paste the full article text here..." rows="6"></textarea>
+            </div>
+            <label for="source">Enter Source (optional, e.g., reuters):</label>
+            <input type="text" id="source" name="source" placeholder="e.g., nytimes">
+            <input type="submit" value="Detect">
+        </form>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if prediction %}
+        <div class="result">
+            <h2>Results for: "{{ text }}"</h2>
+            <p><strong>Model Prediction:</strong> {{ prediction }} (Probability of Real: {{ prob_real }})</p>
+            <p><strong>Sentiment Analysis:</strong> {{ sentiment_label }} (Polarity: {{ sentiment_polarity }}, Subjectivity: {{ sentiment_subjectivity }})</p>
+            <p><strong>Source Credibility Score:</strong> {{ source_score }}</p>
+            <p><strong>Overall Verdict:</strong> {{ overall_verdict }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Bubble decorations -->
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+        <div class="bubble"></div>
+    </div>
+
+    <script>
+        // Toggle input modes
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('url-section').classList.toggle('active', this.value === 'url');
+                document.getElementById('text-section').classList.toggle('active', this.value === 'text');
+                
+                // Clear opposite field and set required
+                if (this.value === 'url') {
+                    document.getElementById('text').removeAttribute('required');
+                    document.getElementById('url').setAttribute('required', true);
+                } else {
+                    document.getElementById('url').removeAttribute('required');
+                    document.getElementById('text').setAttribute('required', true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
